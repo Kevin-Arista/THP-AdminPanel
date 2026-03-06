@@ -9,7 +9,7 @@ type Image = {
 	url: string | null;
 	image_description: string | null;
 	is_public: boolean | null;
-	created_at: string | null;
+	created_datetime_utc: string | null;
 };
 
 function formatDate(iso: string | null) {

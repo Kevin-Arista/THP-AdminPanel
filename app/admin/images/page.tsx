@@ -7,8 +7,8 @@ export default async function ImagesPage() {
 
 	const { data: images, error } = await supabase
 		.from("images")
-		.select("id, url, image_description, is_public, created_at")
-		.order("created_at", { ascending: false });
+		.select("id, url, image_description, is_public, created_datetime_utc")
+		.order("created_datetime_utc", { ascending: false });
 
 	// Caption counts per image
 	const { data: captionRows } = await supabase
