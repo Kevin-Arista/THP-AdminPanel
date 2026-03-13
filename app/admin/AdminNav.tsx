@@ -4,11 +4,62 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-const NAV_ITEMS = [
-	{ href: "/admin/dashboard", label: "Dashboard", icon: "◈" },
-	{ href: "/admin/users", label: "Users", icon: "◉" },
-	{ href: "/admin/images", label: "Images", icon: "◧" },
-	{ href: "/admin/captions", label: "Captions", icon: "◫" },
+type NavItem = { href: string; label: string; icon: string };
+
+type NavGroup = {
+	label: string;
+	items: NavItem[];
+};
+
+const NAV_GROUPS: NavGroup[] = [
+	{
+		label: "Core",
+		items: [
+			{ href: "/admin/dashboard", label: "Dashboard", icon: "◈" },
+			{ href: "/admin/users", label: "Users", icon: "◉" },
+		],
+	},
+	{
+		label: "Content",
+		items: [
+			{ href: "/admin/images", label: "Images", icon: "◧" },
+			{ href: "/admin/captions", label: "Captions", icon: "◫" },
+			{ href: "/admin/caption-requests", label: "Caption Requests", icon: "◰" },
+			{ href: "/admin/caption-examples", label: "Caption Examples", icon: "◱" },
+		],
+	},
+	{
+		label: "Humor",
+		items: [
+			{ href: "/admin/humor-flavors", label: "Humor Flavors", icon: "◍" },
+			{ href: "/admin/humor-flavor-steps", label: "Flavor Steps", icon: "◎" },
+			{ href: "/admin/humor-mix", label: "Humor Mix", icon: "◐" },
+		],
+	},
+	{
+		label: "Vocabulary",
+		items: [{ href: "/admin/terms", label: "Terms", icon: "◑" }],
+	},
+	{
+		label: "AI / LLM",
+		items: [
+			{ href: "/admin/llm-providers", label: "LLM Providers", icon: "◒" },
+			{ href: "/admin/llm-models", label: "LLM Models", icon: "◓" },
+			{ href: "/admin/llm-prompt-chains", label: "Prompt Chains", icon: "◔" },
+			{ href: "/admin/llm-responses", label: "LLM Responses", icon: "◕" },
+		],
+	},
+	{
+		label: "Access Control",
+		items: [
+			{
+				href: "/admin/allowed-signup-domains",
+				label: "Signup Domains",
+				icon: "◖",
+			},
+			{ href: "/admin/whitelist-emails", label: "Whitelist Emails", icon: "◗" },
+		],
+	},
 ];
 
 export default function AdminNav({ userEmail }: { userEmail: string }) {
@@ -31,12 +82,14 @@ export default function AdminNav({ userEmail }: { userEmail: string }) {
 				display: "flex",
 				flexDirection: "column",
 				padding: "1.5rem 0",
+				overflowY: "auto",
 			}}>
 			{/* Brand */}
 			<div
 				style={{
 					padding: "0 1.25rem 1.5rem",
 					borderBottom: "1px solid #1e1e3a",
+					flexShrink: 0,
 				}}>
 				<div
 					style={{
@@ -61,34 +114,50 @@ export default function AdminNav({ userEmail }: { userEmail: string }) {
 				</div>
 			</div>
 
-			{/* Nav links */}
-			<nav style={{ flex: 1, padding: "1rem 0" }}>
-				{NAV_ITEMS.map(({ href, label, icon }) => {
-					const active =
-						pathname === href || pathname.startsWith(href + "/");
-					return (
-						<Link
-							key={href}
-							href={href}
+			{/* Nav groups */}
+			<nav style={{ flex: 1, padding: "0.75rem 0" }}>
+				{NAV_GROUPS.map((group) => (
+					<div key={group.label} style={{ marginBottom: "0.25rem" }}>
+						<div
 							style={{
-								display: "flex",
-								alignItems: "center",
-								gap: "0.6rem",
-								padding: "0.6rem 1.25rem",
-								fontSize: "0.875rem",
-								fontWeight: active ? 600 : 400,
-								color: active ? "#4ecdc4" : "#8888aa",
-								background: active
-									? "rgba(78,205,196,0.08)"
-									: "transparent",
-								borderLeft: `3px solid ${active ? "#4ecdc4" : "transparent"}`,
-								transition: "all 0.15s",
+								padding: "0.5rem 1.25rem 0.25rem",
+								fontSize: "0.62rem",
+								fontWeight: 700,
+								letterSpacing: "0.1em",
+								textTransform: "uppercase",
+								color: "#3a3a5a",
 							}}>
-							<span style={{ fontSize: "0.9rem" }}>{icon}</span>
-							{label}
-						</Link>
-					);
-				})}
+							{group.label}
+						</div>
+						{group.items.map(({ href, label, icon }) => {
+							const active =
+								pathname === href || pathname.startsWith(href + "/");
+							return (
+								<Link
+									key={href}
+									href={href}
+									style={{
+										display: "flex",
+										alignItems: "center",
+										gap: "0.6rem",
+										padding: "0.5rem 1.25rem",
+										fontSize: "0.83rem",
+										fontWeight: active ? 600 : 400,
+										color: active ? "#4ecdc4" : "#8888aa",
+										background: active
+											? "rgba(78,205,196,0.08)"
+											: "transparent",
+										borderLeft: `3px solid ${active ? "#4ecdc4" : "transparent"}`,
+										transition: "all 0.15s",
+										textDecoration: "none",
+									}}>
+									<span style={{ fontSize: "0.85rem" }}>{icon}</span>
+									{label}
+								</Link>
+							);
+						})}
+					</div>
+				))}
 			</nav>
 
 			{/* User info + sign out */}
@@ -96,6 +165,7 @@ export default function AdminNav({ userEmail }: { userEmail: string }) {
 				style={{
 					padding: "1rem 1.25rem",
 					borderTop: "1px solid #1e1e3a",
+					flexShrink: 0,
 				}}>
 				<div
 					style={{

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 type Tab = "upload" | "url";
-type Stage = "idle" | "presigning" | "uploading" | "registering" | "saving" | "error";
+type Stage = "idle" | "presigning" | "uploading" | "registering" | "error";
 
 const BASE_URL = "https://api.almostcrackd.ai";
 const ACCEPTED_TYPES = [
@@ -21,7 +21,6 @@ const STAGE_LABELS: Partial<Record<Stage, string>> = {
 	presigning: "Getting upload URL...",
 	uploading: "Uploading image...",
 	registering: "Registering image...",
-	saving: "Saving...",
 };
 
 export default function NewImagePage() {
@@ -35,7 +34,7 @@ export default function NewImagePage() {
 	const [stage, setStage] = useState<Stage>("idle");
 	const [uploadError, setUploadError] = useState<string | null>(null);
 	const previewUrlRef = useRef<string | null>(null);
-	const isProcessing = ["presigning", "uploading", "registering", "saving"].includes(stage);
+	const isProcessing = ["presigning", "uploading", "registering"].includes(stage);
 
 	// Shared fields
 	const [description, setDescription] = useState("");
@@ -119,7 +118,7 @@ export default function NewImagePage() {
 			if (!uploadRes.ok)
 				throw new Error(`Upload failed with status ${uploadRes.status}`);
 
-			// Step 3: Register image
+			// Step 3: Register image (creates the images.almostcrackd.ai record)
 			setStage("registering");
 			const registerRes = await fetch(`${BASE_URL}/pipeline/upload-image-from-url`, {
 				method: "POST",
@@ -128,22 +127,6 @@ export default function NewImagePage() {
 			});
 			if (!registerRes.ok)
 				throw new Error(`Failed to register image: ${await registerRes.text()}`);
-
-			// Step 4: Save via admin API
-			setStage("saving");
-			const saveRes = await fetch("/api/admin/images", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					url: cdnUrl,
-					image_description: description.trim() || null,
-					is_public: isPublic,
-				}),
-			});
-			if (!saveRes.ok) {
-				const body = await saveRes.json().catch(() => ({}));
-				throw new Error(body.error ?? "Failed to save image.");
-			}
 
 			router.push("/admin/images");
 			router.refresh();
